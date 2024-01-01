@@ -11,6 +11,8 @@ import Contact from './components/Contact';
 import NotFound from './components/NotFound';
 import NavBar from './components/NavBar';
 
+import { db } from './firebase.config';
+
 function App() {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cartItems')) || []);
