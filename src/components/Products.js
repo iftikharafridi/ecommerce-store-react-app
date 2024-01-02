@@ -5,7 +5,7 @@ import { Card, Button, Container, Row, Col } from 'react-bootstrap';
 
 
 
-function Products({products, addToCart }) {
+function Products({products, addToCart, addToFireStoreCart }) {
 //function Products({addToCart}) {
 //    const [products, setProducts] = useState([]);
 
@@ -42,7 +42,8 @@ function Products({products, addToCart }) {
                                             {product.description}
                                         </Card.Text> */}
                                         <p>Price: £{product.price}</p>
-                                        <Button variant="primary" onClick={() => addToCart(product)}>Add to Cart</Button>
+                                        <Button variant="primary" onClick={() => addToCart(product)}>Add to Cart</Button>{' '}
+                                        <Button variant="primary" onClick={() => addToFireStoreCart(product)}>Add to Firebase Cart</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>

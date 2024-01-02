@@ -1,7 +1,7 @@
 import React from 'react';
-import {Table} from 'react-bootstrap';
+import {Table, Button} from 'react-bootstrap';
 
-function ShoppingCart({ cartItems }) {
+function ShoppingCart({ cartItems, dropFromFireStore }) {
     console.log(cartItems)
     return (
         <>
@@ -20,8 +20,9 @@ function ShoppingCart({ cartItems }) {
                             cartItems.map(item => (
                                 <tr>
                                     <td>{item.title}</td>
-                                    <td>1</td>
+                                    <td>{item.qty}</td>
                                     <td>{item.price}</td>
+                                    <Button variant='danger' onClick={() => dropFromFireStore(item.id)}>Delete</Button>
                                 </tr>
                             ))
                         }

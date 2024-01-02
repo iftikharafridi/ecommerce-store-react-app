@@ -12,31 +12,43 @@ import NotFound from './components/NotFound';
 import NavBar from './components/NavBar';
 
 import { db } from './firebase.config';
+import {collection, doc, addDoc, getDocs, deleteDoc, query, where, updateDoc} from 'firebase/firestore'
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cartItems')) || []);
- // const [cartItems, setCartItems] = useState([]);
+  // const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cartItems')) || []);
+  const [cartItems, setCartItems] = useState([]);
+
+  const fetchProducts = async () => {
+    try {
+        console.log('I am in useEffect and going to fetch the products')
+        const items = await axios.get('https://fakestoreapi.com/products/');
+        //console.log(items)
+        console.log(items.data)
+        setProducts(items.data);
+    } catch (error) {
+        console.error('Sorry got error while fetching the products: ', error);
+    }
+};
+
+   const getCartFromFireSotre = async () => {
+        const collectionRef = collection(db, "cart");
+        const querySanpShot = await getDocs(collectionRef)
+        //console.log(querySanpShot)
+       const listOfAllItems =  querySanpShot.docs.map((doc) => ({...doc.data(), id: doc.id}));
+      // console.log(listOfAllItems)
+       setCartItems(listOfAllItems)
+   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-        try {
-            console.log('I am in useEffect and going to fetch the products')
-            const items = await axios.get('https://fakestoreapi.com/products/');
-            //console.log(items)
-            console.log(items.data)
-            setProducts(items.data);
-        } catch (error) {
-            console.error('Sorry got error while fetching the products: ', error);
-        }
-    };
 
     fetchProducts();
+    getCartFromFireSotre();
     // Retrive cartItems from local storage on each refresh
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    console.log('i am stored cart after refresh')
-  console.log(storedCart);
-    setCartItems(storedCart);
+   // const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+   // console.log('i am stored cart after refresh')
+   // console.log(storedCart);
+   // setCartItems(storedCart);
 }, []);
 
 // When ever cart item changes the cart will be updated and store in local storage.
@@ -53,6 +65,66 @@ useEffect(() =>{
     setCartItems([...cartItems, item])
     console.log(cartItems)
   }
+
+  const addToFireStoreCart = async (item) => {
+    // Here I need my logic how to add items to Firestore database
+        console.log(item)
+    try {
+         item.qty = 1;
+         item.pId = item.id;
+        const collectionRef = collection(db, 'cart');
+        
+        const querySanpShot = await getDocs(collectionRef)
+
+        if(querySanpShot.size > 0) {
+
+          const myQuery = query(collectionRef, where('pId', '==', item.id))
+          const docsSnap = await getDocs (myQuery)
+          const docSnap = docsSnap.docs[0];
+          
+          //if(docSnap.exists) // Idealy we should use this one, but sometime it works and sometime it doesn't so I am useing the blow instead of exist
+          if(docsSnap.size > 0) {
+              // As the item already exist so we simply update the quantity
+              const id = docSnap.id;
+              const documentRef = doc(collectionRef, id)
+              await updateDoc (documentRef, {
+                qty: docSnap.data().qty + 1
+              })
+
+          } else {
+            const docRef = await addDoc(collectionRef, item)
+            console.log("Item added successfuly to the cart with ID: ", docRef.id)
+          }
+
+
+
+        } else {
+
+          const docRef = await addDoc(collectionRef, item)
+          console.log("Item added successfuly to the cart with ID: ", docRef.id)
+        }
+
+    } catch (error) {
+       console.error("Sorry item is not added to cart: ", error)
+    }
+  }
+
+  const dropFromFireStore = async (id) => {
+    try {
+      console.log("I am in dropFromFireStore function")
+      console.log(id)
+      const collectionRef = collection(db, 'cart')
+      const documentRef = doc(collectionRef, id)
+      await deleteDoc(documentRef)
+       console.log("Item droped from cart successfully")
+       getCartFromFireSotre();
+     // await deleteDoc(doc(db, 'cart', id))
+
+    } catch (error) {
+      console.error("Sorry the item can't be droped: ", error)
+    }
+  }
+
   return (
     <>        
       <NavBar />
@@ -61,8 +133,8 @@ useEffect(() =>{
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
         {/* <Route path='/products' element={<Products addToCart = {addToCart} />} /> */}
-        <Route path='/products' element={<Products addToCart = {addToCart} products = {products} />} />
-        <Route path='/cart' element={<ShoppingCart cartItems = {cartItems} />} />
+        <Route path='/products' element={<Products addToCart = {addToCart} addToFireStoreCart = {addToFireStoreCart} products = {products} />} />
+        <Route path='/cart' element={<ShoppingCart cartItems = {cartItems} dropFromFireStore={dropFromFireStore} />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
 
