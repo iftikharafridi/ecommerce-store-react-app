@@ -4,6 +4,7 @@ import Products from './components/Products';
 import ShoppingCart from './components/ShoppingCart';
 import {Routes, Route} from 'react-router-dom';
 import axios from 'axios';
+import Login from './components/Login';
 
 import Home from './components/Home';
 import About from './components/About';
@@ -11,13 +12,19 @@ import Contact from './components/Contact';
 import NotFound from './components/NotFound';
 import NavBar from './components/NavBar';
 
-import { db } from './firebase.config';
+import { db, auth, googleProvider } from './firebase.config';
+import { signInWithPopup, signOut } from 'firebase/auth';
 import {collection, doc, addDoc, getDocs, deleteDoc, query, where, updateDoc} from 'firebase/firestore'
+import Register from './components/Register';
 
 function App() {
   const [products, setProducts] = useState([]);
   // const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cartItems')) || []);
   const [cartItems, setCartItems] = useState([]);
+  
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -135,6 +142,8 @@ useEffect(() =>{
         {/* <Route path='/products' element={<Products addToCart = {addToCart} />} /> */}
         <Route path='/products' element={<Products addToCart = {addToCart} addToFireStoreCart = {addToFireStoreCart} products = {products} />} />
         <Route path='/cart' element={<ShoppingCart cartItems = {cartItems} dropFromFireStore={dropFromFireStore} />} />
+        <Route path='/login' element={<Login setEmail={setEmail} setPassword={setPassword} />} />
+        <Route path='/Register' element={<Register setEmail ={setEmail} setPassword = {setPassword} />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
 

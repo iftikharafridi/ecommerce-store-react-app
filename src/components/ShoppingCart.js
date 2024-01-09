@@ -20,7 +20,11 @@ function ShoppingCart({ cartItems, dropFromFireStore }) {
                             cartItems.map(item => (
                                 <tr>
                                     <td>{item.title}</td>
-                                    <td>{item.qty}</td>
+                                    <td>
+                                        <button>-</button>{' '}
+                                        {item.qty} {' '}
+                                        <button>+</button>
+                                    </td>
                                     <td>{item.price}</td>
                                     <Button variant='danger' onClick={() => dropFromFireStore(item.id)}>Delete</Button>
                                 </tr>
