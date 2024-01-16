@@ -16,15 +16,18 @@ import { db, auth, googleProvider } from './firebase.config';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import {collection, doc, addDoc, getDocs, deleteDoc, query, where, updateDoc} from 'firebase/firestore'
 import Register from './components/Register';
+import UserContext from './components/UserContext';
 
 function App() {
   const [products, setProducts] = useState([]);
   // const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem('cartItems')) || []);
   const [cartItems, setCartItems] = useState([]);
   
-  const [user, setUser] = useState(null);
+  //const [user, setUser] = useState(null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || []);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
+  const [loginErrorMessage, setLoginErrorMessage] = useState('')
 
   const fetchProducts = async () => {
     try {
@@ -65,6 +68,13 @@ useEffect(() =>{
  // console.log('i am stored cart')
  // console.log(storedCart);
 }, [cartItems]);
+
+useEffect(() =>{
+  localStorage.setItem('user', JSON.stringify(user));
+ // const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+ // console.log('i am stored cart')
+ // console.log(storedCart);
+}, [user]);
 
   const addToCart = (item) => { 
     console.log('i am adding item = ')
@@ -133,7 +143,8 @@ useEffect(() =>{
   }
 
   return (
-    <>        
+    <> 
+      <UserContext.Provider value={{user, setUser}}>
       <NavBar />
       <Routes>
         <Route path='/' element={<Home />} />
@@ -142,7 +153,7 @@ useEffect(() =>{
         {/* <Route path='/products' element={<Products addToCart = {addToCart} />} /> */}
         <Route path='/products' element={<Products addToCart = {addToCart} addToFireStoreCart = {addToFireStoreCart} products = {products} />} />
         <Route path='/cart' element={<ShoppingCart cartItems = {cartItems} dropFromFireStore={dropFromFireStore} />} />
-        <Route path='/login' element={<Login setEmail={setEmail} setPassword={setPassword} />} />
+        <Route path='/login' element={<Login setEmail={setEmail} setPassword={setPassword} loginErrorMessage={loginErrorMessage} setLoginErrorMessage={setLoginErrorMessage} />} />
         <Route path='/Register' element={<Register setEmail ={setEmail} setPassword = {setPassword} />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
@@ -150,6 +161,8 @@ useEffect(() =>{
        {/* <h1>Welcome to my Store</h1>
       <ShoppingCart cartItems = {cartItems} />
       <Products addToCart = {addToCart} /> */}
+      </UserContext.Provider>       
+      
     </>
   );
 }
